@@ -99,11 +99,19 @@ sum(is.na(data))
 
 ```r
 # 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+## I am substituting the NA values by the mean of the steps taken for that particular interval. I chose this strategy because people are likely to follow different patterns for different intervals and therefore the number of steps is likely to differ a lot from interval to interval.
 # 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
-## substitute the NA values by the mean of the non NA values of steps (for all days)
-## create new dataset
-dataSummarised3 <- data
-dataSummarised3[is.na(dataSummarised3)] <- mean(data$steps[complete.cases(data$steps)])
+intervalMean <- 
+    data %>%  
+    filter(!is.na(steps)) %>%
+    group_by(interval) %>%
+    summarise(average = mean(steps))
+    
+
+dataSummarised3 <- 
+    data %>%
+    merge(intervalMean, by.x = "interval", by.y = "interval") %>%
+    mutate(steps = ifelse(is.na(steps), average, steps), average = NULL)
 
 # 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 ## summarize data
@@ -136,7 +144,7 @@ median(dataSummarised$total)
 ```
 
 ```r
-## The values differ - explain how and why
+## The values do not differ because assuming 0 is the same as ignoring NA values for the purposes of frequency, mean and median.
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?

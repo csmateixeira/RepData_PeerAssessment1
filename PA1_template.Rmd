@@ -48,7 +48,8 @@ median(dataSummarised$total)
 ## What is the average daily activity pattern?
 ```{r daily, echo=TRUE}
 
-# 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+# 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) 
+#   and the average number of steps taken, averaged across all days (y-axis)
 ## summarize data
 dataSummarised2 <-
     data %>%
@@ -72,11 +73,19 @@ dataSummarised2$interval[dataSummarised2$average == max(dataSummarised2$average)
 sum(is.na(data))
 
 # 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+## I am substituting the NA values by the mean of the steps taken for that particular interval. I chose this strategy because people are likely to follow different patterns for different intervals and therefore the number of steps is likely to differ a lot from interval to interval.
 # 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
-## substitute the NA values by 0 - if the number of steps is not reported the most logical assumption would be that no steps were taken
-## create new dataset
-dataSummarised3 <- data
-dataSummarised3[is.na(dataSummarised3)] <- 0 #mean(data$steps[complete.cases(data$steps)])
+intervalMean <- 
+    data %>%  
+    filter(!is.na(steps)) %>%
+    group_by(interval) %>%
+    summarise(average = mean(steps))
+    
+
+dataSummarised3 <- 
+    data %>%
+    merge(intervalMean, by.x = "interval", by.y = "interval") %>%
+    mutate(steps = ifelse(is.na(steps), average, steps), average = NULL)
 
 # 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 ## summarize data
